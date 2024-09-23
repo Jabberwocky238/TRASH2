@@ -8,7 +8,7 @@ EXECUTABLE := MyExecutable
 
 all: $(EXECUTABLE)
 	@echo "[Build successful!]"
-	@./build/Debug/$(EXECUTABLE)
+	@./build/src/Debug/$(EXECUTABLE)
 
 # 构建可执行文件
 $(EXECUTABLE): 

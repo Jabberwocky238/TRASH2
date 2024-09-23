@@ -10,11 +10,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # 设置vcpkg工具链文件路径
 include("D:/Scoop/apps/vcpkg/current/scripts/buildsystems/vcpkg.cmake")
+# 设置包含目录
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
-find_package(nlohmann_json CONFIG REQUIRED)
-
+# 添加一个子目录，通常是包含源代码的目录
+add_subdirectory(src)
 
 # 添加执行文件
-add_executable(MyExecutable src/main.cpp)
+# add_executable(MyExecutable src/main.cpp)
 
-target_link_libraries(MyExecutable PRIVATE nlohmann_json::nlohmann_json)
