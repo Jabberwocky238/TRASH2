@@ -11,14 +11,15 @@ namespace fs = std::filesystem;
 int main(int argc, char* argv[]) {
     cxxopts::Options options("MyProgram", "One line description of MyProgram");
     options.add_options()
-        ("m,mode", "launch mode", cxxopts::value<std::string>()->default_value("interact"))
+        ("c,cmd", "cmd mode", cxxopts::value<bool>()->default_value("false"))
         ("i,input", "input dir path", cxxopts::value<std::string>()->default_value("E:\\1-School"))
         ("o,output", "output file path", cxxopts::value<std::string>()->default_value("output.json"))
     ;
 
     auto result = options.parse(argc, argv);
-    std::string mode = result["mode"].as<std::string>();
-    if (mode == std::string("interact")) {
+    bool cmd = result["cmd"].as<bool>();
+
+    if (!cmd) {
         fs::path current_dir = fs::current_path();
         std::string input_line;
         while (true) {

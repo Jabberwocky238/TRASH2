@@ -1,9 +1,10 @@
 @echo off
 if "%~1"=="" (
     echo No command provided.
-    echo Usage: %0 [command=build|run|clean]
+    echo Usage: "setup [command=build|run|clean]"
     exit /b
 )
+goto :eof
 
 REM 定义命令
 echo "[Command]: %~1"
@@ -19,7 +20,7 @@ if "%~1"=="build" (
     call :clean
 ) else (
     echo Invalid command: %~1
-    echo Usage: %0 [command=build|run|clean]
+    echo Usage: "setup [command=build|run|clean]"
     exit /b
 )
 goto :eof
