@@ -1,25 +1,26 @@
-#include "include/core.h"
+#include "core.h"
+#include <meojson/include/json.hpp>
 
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-#include <nlohmann/json.hpp>
 #include <codecvt>
 #include <locale>
 
 namespace fs = std::filesystem;
-using json = nlohmann::json;
 
-constexpr char* JSON_NAME = "a_name";
-constexpr char* JSON_SIZE_MB = "b_size_mb";
-constexpr char* JSON_FILE_COUNT = "c_file_count";
-constexpr char* JSON_CHILDREN = "d_children";
-
-
-int scan_folder_size(const fs::path& input_folder, json& output) {
+int scan_folder_size_to_file(const fs::path& input_folder, const fs::path& output_file_name) {
     try {
         if (fs::exists(input_folder) && fs::is_directory(input_folder)) {
-            output = get_folder_info(input_folder);
+            json::value output;
+            scan_folder_size(input_folder, output);
+            if (fs::exists(output_file_name)) {
+                fs::remove(output_file_name);
+                std::cout << "File " << output_file_name<< " deleted successfully." << std::endl;
+            }
+            std::ofstream output_file(output_file_name);
+            output_file << output.format(4);
+            output_file.close();
             std::cout << "Writing results to 'output.json'" << std::endl;
             return EXIT_SUCCESS;
         } else {
@@ -35,31 +36,37 @@ int scan_folder_size(const fs::path& input_folder, json& output) {
     }
 }
 
-std::string wstring_to_utf8(const std::wstring& wstr) {
+inline void scan_folder_size(const fs::path& input_folder, json::value& output) {
+    output = get_folder_info(input_folder);
+}
+inline const std::wstring path_to_wstring(const fs::path& path) {
+    return path.filename().wstring();
+};
+inline const std::string wstring_to_utf8(const std::wstring& wstr) {
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
     return conv.to_bytes(wstr);
+};
+inline void encounter(MyStruct& folder_info, double file_size, uint64_t file_count) {
+    folder_info._file_count += file_count;
+    folder_info._mb += file_size;
 }
 
-json get_folder_info(const fs::path& path) {
-    json folder_info;
-    std::wstring wide_str = path.filename().wstring();
-    std::string utf8_str = wstring_to_utf8(wide_str);
-    folder_info[JSON_NAME] = utf8_str;
-    folder_info[JSON_SIZE_MB] = (double)0;
-    folder_info[JSON_FILE_COUNT] = (uint64_t)0;
-    folder_info[JSON_CHILDREN] = json::array();
+MyStruct get_folder_info(const fs::path& path) {
+    MyStruct folder_info;
+    folder_info._name = wstring_to_utf8(path_to_wstring(path));
+    folder_info._mb = (double)0;
+    folder_info._file_count = (uint64_t)0;
+    folder_info.children = std::vector<MyStruct>();
 
     for (const auto& entry : fs::directory_iterator(path)) {
         if (entry.is_regular_file()) {
-            folder_info[JSON_SIZE_MB] = (double)folder_info[JSON_SIZE_MB] + (double)fs::file_size(entry) / (1024 * 1024);
-            folder_info[JSON_FILE_COUNT] = (uint64_t)folder_info[JSON_FILE_COUNT] + (uint64_t)1;
+            encounter(folder_info, (double)entry.file_size() / (1024 * 1024), 1);
         } else if (entry.is_directory()) {
-            json subdir_info = get_folder_info(entry.path());
-            folder_info[JSON_SIZE_MB] = (double)subdir_info[JSON_SIZE_MB] + (double)folder_info[JSON_SIZE_MB];
-            folder_info[JSON_FILE_COUNT] = (uint64_t)subdir_info[JSON_FILE_COUNT] + (uint64_t)folder_info[JSON_FILE_COUNT];
+            MyStruct subdir_info = get_folder_info(entry.path());
+            encounter(folder_info, (double)subdir_info._mb, subdir_info._file_count);
             // Check if subdir size is greater than or equal to 1MB
-            if (subdir_info[JSON_SIZE_MB] >= 1.0) {  
-                folder_info[JSON_CHILDREN].push_back(subdir_info);
+            if (subdir_info._mb >= 1.0) {  
+                folder_info.children.push_back(std::move(subdir_info));
             }
         }
     }
