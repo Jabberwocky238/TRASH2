@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+// #define ZQ_DEBUG
+
 namespace zq_fswalk
 {
     time_t get_last_modified(const std::filesystem::path &path);
@@ -30,7 +32,7 @@ public:
     FolderInfo *parent;
     std::vector<FolderInfo *> children;
 
-    FolderInfo(const std::string &dir_name);
+    FolderInfo(const std::string &dir_name, FolderInfo *_parent);
     ~FolderInfo();
 
     std::string info();

@@ -30,10 +30,10 @@ bool Console::cd(const std::filesystem::path &path)
         this->cur_path = fs::current_path();
         // this->cur_path.string();
         std::vector<std::string> path_through = zq_fswalk::split_path(this->cur_path.string());
-        for (auto &name : path_through)
-        {
-            std::cout << "[debug] " << name << std::endl;
-        }
+        // for (auto &name : path_through)
+        // {
+        //     std::cout << "[debug] " << name << std::endl;
+        // }
         // std::vector<std::string> path_through = {};
         std::cout << "[info] " << "Change to directory: " << this->cur_path << std::endl;
 
@@ -50,7 +50,7 @@ bool Console::cd(const std::filesystem::path &path)
         }
         std::cout << "[info] " << "cur_info is nullptr, Need to build new folder info" << std::endl;
 
-        FolderInfo *root = this->cur_info != nullptr ? this->cur_info->root() : new FolderInfo(path_through[0]);
+        FolderInfo *root = this->cur_info != nullptr ? this->cur_info->root() : new FolderInfo(path_through[0], nullptr);
         std::string _path = path_through[0];
         path_through.erase(path_through.begin());
 
@@ -61,8 +61,7 @@ bool Console::cd(const std::filesystem::path &path)
             if (child == nullptr)
             {
                 // std::cout << "[info] " << "create" << std::endl;
-                child = new FolderInfo(name);
-                child->parent = root;
+                child = new FolderInfo(name, root);
                 root->children.push_back(child);
             }
             root = child;
@@ -80,7 +79,8 @@ bool Console::cd(const std::filesystem::path &path)
 
 FolderInfo *Console::scan()
 {
-    return nullptr;
+    this->cur_info->scan();
+    return this->cur_info;
 }
 
 inline std::string parse_command(const std::string &input_line)

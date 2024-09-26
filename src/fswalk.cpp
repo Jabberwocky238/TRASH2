@@ -48,10 +48,11 @@ namespace zq_fswalk
     };
 }
 
-FolderInfo::FolderInfo(const std::string &dir_name)
+FolderInfo::FolderInfo(const std::string &dir_name, FolderInfo *_parent): parent(_parent), name(dir_name)
 {
-    name = dir_name;
-    std::cout << "[info] " << "build: " << dir_name << std::endl;
+#ifdef ZQ_DEBUG
+    std::cout << "[debug] " << "build: " << dir_name << std::endl;
+#endif
     last_modified = 0;
 
     size = 0;
@@ -62,7 +63,6 @@ FolderInfo::FolderInfo(const std::string &dir_name)
     children_count = 0;
     dir_count = 0;
     file_count = 0;
-    parent = nullptr;
 }
 
 FolderInfo::~FolderInfo()
@@ -93,7 +93,9 @@ FolderInfo *FolderInfo::root()
 
 FolderInfo *FolderInfo::find_tree(const std::vector<std::string> &names, int depth)
 {
-    std::cout << "[info] " << this->name << " find_tree: " << names[depth] << std::endl;
+#ifdef ZQ_DEBUG
+    std::cout << "[debug] " << this->name << " find_tree: " << names[depth] << std::endl;
+#endif
     for (auto child : children)
     {
         if (child->name == names[depth])
@@ -133,6 +135,7 @@ void FolderInfo::scan()
     if (!(fully_scanned && this->verify()))
     {
         this->reset();
+        int count = 0;
         for (const auto &entry : fs::directory_iterator(this->path()))
         {
             if (entry.is_directory())
@@ -140,12 +143,12 @@ void FolderInfo::scan()
                 FolderInfo *info = this->find_children(entry.path().filename().string());
                 if (info == nullptr)
                 {
-                    info = new FolderInfo(entry.path().filename().string());
-                    info->parent = this;
+                    info = new FolderInfo(entry.path().filename().string(), this);
                     this->children.push_back(info);
                 }
                 info->scan();          // scan again
                 info->_scanned = true; // set flag
+                count += info->children_count;
                 this->dir_count++;
                 this->size += info->size;
             }
@@ -154,7 +157,7 @@ void FolderInfo::scan()
                 this->file_count++;
                 this->size += fs::file_size(entry.path());
             }
-            this->children_count = this->dir_count + this->file_count;
+            this->children_count = this->dir_count + this->file_count + count;
             this->less_than_5mb = this->size < 5 * 1024 * 1024;
         }
         for (auto it = this->children.begin(); it != this->children.end(); it++)
