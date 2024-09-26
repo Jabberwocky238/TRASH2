@@ -1,24 +1,44 @@
+#pragma once
 #include <iostream>
 #include <filesystem>
 #include <string>
 #include <vector>
 
+namespace zq_fswalk
+{
+    time_t get_last_modified(const std::filesystem::path &path);
+    std::vector<std::string> split_path(const std::string &path);
+    std::filesystem::path join_path(const std::vector<std::string>::iterator &begin, const std::vector<std::string>::iterator &end);
+}
+
 struct FolderInfo
 {
+private:
     std::string name;
-    std::vector<std::string> path;
+
     uintmax_t size;
-    int children_count;
     time_t last_modified;
     bool less_than_5mb;
+    bool fully_scanned;
+    bool _scanned;
 
-    FolderInfo *parent;                 
+    int children_count;
+    int dir_count;
+    int file_count;
+
+public:
+    FolderInfo *parent;
     std::vector<FolderInfo *> children;
 
-    FolderInfo(const std::filesystem::path &dir_path);
+    FolderInfo(const std::string &dir_name);
     ~FolderInfo();
-    std::string info();
-};
 
-FolderInfo *scan_folder(const std::filesystem::path &dir_path) ;
-FolderInfo *scan_folder(const std::filesystem::path &dir_path, FolderInfo *parent);
+    std::string info();
+    FolderInfo *root();
+    FolderInfo *find_tree(const std::vector<std::string> &names, int depth);
+    FolderInfo *find_children(const std::string &name);
+    std::filesystem::path path();
+    void scan();
+    bool verify();
+    void reset();
+};

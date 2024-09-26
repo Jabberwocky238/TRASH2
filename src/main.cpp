@@ -1,5 +1,5 @@
 #include "core.h"
-#include "interact.h"
+#include "prompt.h"
 #include <cxxopts/include/cxxopts.hpp>
 
 #include <iostream>
@@ -22,8 +22,6 @@ int main(int argc, char* argv[]) {
     if (input_folder == "") {
         prompt();
     } else {
-        std::cout << "dir path: " << input_folder << std::endl;
-        
         scan_folder_size_to_file(input_folder, output_file_name);
     }
     return EXIT_SUCCESS;
