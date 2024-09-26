@@ -1,11 +1,63 @@
 #pragma once
-#include "fswalk.h"
-#include "command.h"
-
 #include <iostream>
 #include <filesystem>
+#include <string>
+#include <vector>
+
+#define ZQ_DEBUG
+
+namespace zq_fswalk
+{
+    time_t getLastModified(const std::filesystem::path &path);
+    uintmax_t getFolderSize(const std::filesystem::path &path);
+    std::vector<std::string> splitPath(const std::string &path);
+    std::filesystem::path joinPath(const std::vector<std::string> &path);
+}
+
+struct FolderInfo
+{
+private:
+    std::string name;
+
+    uintmax_t size;
+    time_t last_modified;
+    bool fully_scanned;
+    bool _scanned;
+public:
+    int childrenCount;
+    int depth;
+
+    FolderInfo *parent;
+    std::vector<FolderInfo *> children;
+
+    FolderInfo(const std::string &dir_name);
+    FolderInfo(const std::string &dir_name, FolderInfo *parent);
+    ~FolderInfo();
+
+    std::string info();
+    // FolderInfo *root();
+    FolderInfo *find_tree(const std::vector<std::string> &names, int depth);
+    FolderInfo *find_children(const std::string &name);
+    std::filesystem::path path();
+    void scan();
+    bool verify();
+    void reset();
+};
+
+struct Console
+{
+    FolderInfo *cur_info;
+    FolderInfo *root;
+    std::vector<std::string> curPaths;
+    
+    Console(const std::filesystem::path &path);
+    ~Console();
+
+    std::filesystem::path destination(std::vector<std::string> &paths) const;
+    void cd(const std::filesystem::path &path);
+    void ls();
+    void scan();
+};
 
 
 void prompt();
-void command_dir(const std::filesystem::path&current_dir);
-void prompt_command(const std::string &input_line, Console& console);

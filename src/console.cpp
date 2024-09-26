@@ -1,5 +1,4 @@
-#include "command.h"
-#include "fswalk.h"
+#include "prompt.h"
 
 #include <iostream>
 #include <filesystem>
@@ -116,16 +115,13 @@ void Console::scan()
     this->cur_info->scan();
 }
 
-inline std::string parse_command(const std::string &input_line)
-{
-    return input_line.find(' ') == std::string::npos ? input_line : input_line.substr(0, input_line.find(' '));
-}
 
-void command_dir(const fs::path &current_dir)
+
+void Console::ls()
 {
     size_t _cnt = 0;
     std::cout << std::endl;
-    for (const auto &entry : fs::directory_iterator(current_dir))
+    for (const auto &entry : fs::directory_iterator(this->cur_info->path()))
     {
         std::string name = entry.path().filename().string();
         if (entry.is_directory())
@@ -143,31 +139,4 @@ void command_dir(const fs::path &current_dir)
     }
 }
 
-void Console::ls()
-{
-    command_dir(this->cur_info->path());
-}
 
-
-void prompt_command(const std::string &input_line, Console &console)
-{
-    std::string command = parse_command(input_line);
-
-    if (command == "cd")
-    {
-        console.cd(input_line.substr(3));
-    }
-    else if (command == "ls")
-    {
-        console.ls();
-    }
-    else if (command == "scan")
-    {
-        console.scan();
-        std::cout << console.cur_info->info() << std::endl;
-    }
-    else
-    {
-        std::cerr << "Unknown command: " << input_line << std::endl;
-    }
-}

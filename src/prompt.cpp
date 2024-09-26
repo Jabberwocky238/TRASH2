@@ -1,12 +1,9 @@
 
 #include "prompt.h"
-#include "fswalk.h"
-
 #include <Windows.h>
 #include <iostream>
 #include <filesystem>
 #include <string>
-
 
 namespace fs = std::filesystem;
 
@@ -20,6 +17,29 @@ void MY_PROMPT(const fs::path& prompt, bool enter = false) {
         std::cout << std::endl;
     }
     std::cout << "[" << prompt << "]> ";
+}
+
+void prompt_command(const std::string &input_line, Console &console)
+{
+    std::string command = parse_command(input_line);
+
+    if (command == "cd")
+    {
+        console.cd(input_line.substr(3));
+    }
+    else if (command == "ls")
+    {
+        console.ls();
+    }
+    else if (command == "scan")
+    {
+        console.scan();
+        std::cout << console.cur_info->info() << std::endl;
+    }
+    else
+    {
+        std::cerr << "Unknown command: " << input_line << std::endl;
+    }
 }
     
 void prompt()
@@ -59,7 +79,6 @@ void prompt()
                     std::cout << "Gracefully exit." << std::endl;
                     break;
                 }
-                std::cout << "\nINPUT: " << _input_line << std::endl;
                 prompt_command(_input_line, console);
                 MY_PROMPT(console.cur_info->path(), true);
                 _input_line.clear();
