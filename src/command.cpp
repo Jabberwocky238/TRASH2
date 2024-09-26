@@ -1,17 +1,13 @@
 #include "interact.h"
+#include "fswalk.h"
+
 #include <iostream>
 #include <filesystem>
 #include <string>
 #include <codecvt>
-#include <iomanip> // 包含setw函数的头文
+#include <iomanip> 
 
 namespace fs = std::filesystem;
-
-// inline const std::string path_to_utf8(const fs::path &path)
-// {
-//     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-//     return conv.to_bytes(path.filename().wstring());
-// };
 
 inline std::string parse_command(const std::string &input_line)
 {
@@ -25,7 +21,7 @@ void command_dir(const fs::path &current_dir)
     for (const auto &entry : fs::directory_iterator(current_dir))
     {
         std::string name = entry.path().filename().string();
-        if (fs::is_directory(entry.path()))
+        if (entry.is_directory())
         {
             name += "/";
         }
@@ -44,7 +40,7 @@ bool prompt_command(const std::string &input_line, fs::path &current_dir)
 {
     std::string command = parse_command(input_line);
 
-    if (input_line.substr(0, 3) == "cd ")
+    if (command == "cd")
     {
         if (fs::is_directory(input_line.substr(3)))
         {
@@ -59,6 +55,11 @@ bool prompt_command(const std::string &input_line, fs::path &current_dir)
     }
     else if (command == "ls"){
         command_dir(current_dir);
+    }
+    else if (command == "scan"){
+        FolderInfo* info = scan_folder(current_dir);
+        std::cout << info->info() << std::endl;
+        delete info;
     }
     else
     {

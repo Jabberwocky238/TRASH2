@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 # 设置vcpkg工具链文件路径
-include("D:/Scoop/apps/vcpkg/current/scripts/buildsystems/vcpkg.cmake")
+# include("D:/Scoop/apps/vcpkg/current/scripts/buildsystems/vcpkg.cmake")
 # 设置包含目录
 set(THIRD_PARTY_BASE_DIR ${CMAKE_SOURCE_DIR}/thirdparty)
 include_directories(${THIRD_PARTY_BASE_DIR})

@@ -1,10 +1,10 @@
-#include "interact.h"
 
+#include "interact.h"
+#include <Windows.h>
 #include <iostream>
 #include <filesystem>
 #include <string>
 
-#include <Windows.h>
 
 namespace fs = std::filesystem;
 
@@ -38,7 +38,7 @@ void prompt()
             std::cerr << "ReadFile failed: " << GetLastError() << std::endl;
             break;
         }
-        // 检查是否读取到数据
+        
         if (cNumRead > 0)
         {
             buffer[cNumRead] = '\0';
@@ -78,7 +78,6 @@ void prompt()
         }
     }
 
-    // 恢复原来的输入模式
     SetConsoleMode(hInput, oldMode);
     return;
 }

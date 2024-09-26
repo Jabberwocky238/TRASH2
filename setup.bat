@@ -55,7 +55,8 @@ REM 创建构建目录
 if not exist build mkdir build
 cd build
 REM 运行cmake来生成Makefile
-cmake ..
+@REM cmake -G "MinGW Makefiles" ..
+cmake -G "Visual Studio 17 2022" ..
 REM 检查cmake是否成功
 if %ERRORLEVEL% NEQ 0 (
     echo CMake failed to generate the Makefile.
@@ -64,7 +65,8 @@ if %ERRORLEVEL% NEQ 0 (
     goto :eof
 )
 REM 运行make来构建项目
-cmake --build . --config Debug --target ALL_BUILD
+@REM cmake --build . --config Debug --target ALL_BUILD
+cmake --build . 
 REM 检查make是否成功
 if %ERRORLEVEL% NEQ 0 (
     echo MSBuild failed to build the project.
