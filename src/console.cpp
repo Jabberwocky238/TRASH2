@@ -120,7 +120,7 @@ void ZConsole::PROMPTING(bool enter)
     if (enter) {
         std::cout << std::endl;
     }
-    std::cout << "[" << prompt << "]> ";
+    std::cout << "[" << this->cur_info->path() << "]> ";
 }
 
 void ZConsole::ls()

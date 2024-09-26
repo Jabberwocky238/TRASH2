@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <meojson/include/json.hpp>
 
 #define ZQ_DEBUG
 
@@ -16,14 +17,12 @@ namespace zq_fswalk
 
 struct ZFolderInfo
 {
-private:
+public:
     std::string name;
-
     uintmax_t size;
     time_t last_modified;
     bool fully_scanned;
     bool _scanned;
-public:
     int childrenCount;
     int depth;
 
@@ -61,5 +60,6 @@ struct ZConsole
     void PROMPTING(bool enter = true);
 };
 
-
 void prompt();
+void zq_serialize(const ZConsole &console, json::value& j);
+void dump(std::string input_folder, std::string output_file_name);

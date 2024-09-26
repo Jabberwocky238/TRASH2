@@ -2,12 +2,7 @@
 #include "prompt.h"
 #include <cxxopts/include/cxxopts.hpp>
 
-
 #include <iostream>
-#include <filesystem>
-
-namespace fs = std::filesystem;
-
 
 int main(int argc, char* argv[]) {
     cxxopts::Options options("MyProgram", "One line description of MyProgram");
@@ -19,11 +14,11 @@ int main(int argc, char* argv[]) {
     auto result = options.parse(argc, argv);
     std::string input_folder = result["input"].as<std::string>();
     std::string output_file_name = result["output"].as<std::string>();
-
+    
     if (input_folder == "") {
         prompt();
     } else {
-        scan_folder_size_to_file(input_folder, output_file_name);
+        dump(input_folder, output_file_name);
     }
     return EXIT_SUCCESS;
 }

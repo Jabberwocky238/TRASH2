@@ -1,0 +1,36 @@
+{
+    "_count": 14,
+    "_last_modified": 1727354588,
+    "_mb": 45.629883,
+    "_name": "qqq",
+    "_size": 47846836,
+    "children": [
+        {
+            "_count": 0,
+            "_last_modified": 1727352649,
+            "_mb": 13.321289,
+            "_name": "bin",
+            "_size": 13968384,
+            "children": [
+            ]
+        },
+        {
+            "_count": 0,
+            "_last_modified": 1727352653,
+            "_mb": 25.875000,
+            "_name": "build",
+            "_size": 27132089,
+            "children": [
+            ]
+        },
+        {
+            "_count": 0,
+            "_last_modified": 1727140547,
+            "_mb": 6.316406,
+            "_name": "thirdparty",
+            "_size": 6623741,
+            "children": [
+            ]
+        }
+    ]
+}
