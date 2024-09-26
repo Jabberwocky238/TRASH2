@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 
 namespace zq_fswalk
 {
-    time_t get_last_modified(const fs::path &path)
+    time_t getLastModified(const fs::path &path)
     {
         fs::file_time_type ftime = fs::last_write_time(path);
         time_t cftime = std::chrono::system_clock::to_time_t(
@@ -18,7 +18,23 @@ namespace zq_fswalk
                 ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()));
         return cftime;
     }
-    std::vector<std::string> split_path(const std::string &path)
+    uintmax_t getFolderSize(const std::filesystem::path &path)
+    {
+        uintmax_t size = 0;
+        for (const auto &entry : std::filesystem::directory_iterator(path))
+        {
+            if (entry.is_directory())
+            {
+                size += getFolderSize(entry.path());
+            }
+            else if(entry.is_regular_file())
+            {
+                size += entry.file_size();
+            }
+        }
+        return size;
+    }
+    std::vector<std::string> splitPath(const std::string &path)
     {
         std::vector<std::string> builder;
         std::string part;
@@ -34,36 +50,57 @@ namespace zq_fswalk
                 part += c;
             }
         }
-        builder.push_back(part);
+        if (part.size() > 0) builder.push_back(part);
         return builder;
     };
-    std::filesystem::path join_path(const std::vector<std::string>::iterator &begin, const std::vector<std::string>::iterator &end)
+    std::filesystem::path joinPath(const std::vector<std::string>& paths)
     {
         std::string builder;
-        for (auto it = begin; it != end; it++)
+        for (auto path : paths)
         {
-            builder += *it + "\\";
+            builder += path + "/";
         }
         return builder;
     };
 }
-
-FolderInfo::FolderInfo(const std::string &dir_name, FolderInfo *_parent): parent(_parent), name(dir_name)
+FolderInfo::FolderInfo(const std::string &dir_name, FolderInfo *parent): parent(parent), name(dir_name)
 {
 #ifdef ZQ_DEBUG
-    std::cout << "[debug] " << "build: " << dir_name << std::endl;
+    std::cout << "[debug] [FolderInfo] [contructor]: " << this->path().string() << std::endl;
 #endif
-    last_modified = 0;
-
     size = 0;
-    less_than_5mb = false;
+    last_modified = 0;
     fully_scanned = false;
-
+    childrenCount = 0;
+    depth = parent->depth + 1;
     children = {};
-    children_count = 0;
-    dir_count = 0;
-    file_count = 0;
 }
+FolderInfo::FolderInfo(const std::string &dir_name): parent(nullptr), name(dir_name)
+{
+#ifdef ZQ_DEBUG
+    std::cout << "[debug] [FolderInfo] [contructor]: " << dir_name << std::endl;
+#endif
+    size = 0;
+    last_modified = 0;
+    fully_scanned = false;
+    childrenCount = 0;
+    depth = -1;
+    children = {};
+}
+
+void FolderInfo::reset()
+{
+    this->size = 0;
+    this->last_modified = zq_fswalk::getLastModified(this->path());
+    this->fully_scanned = false;
+    this->childrenCount = 0;
+    this->depth = this->parent->depth + 1;
+    for (auto child : children)
+    {
+        child->_scanned = false; // reset flag
+    }
+}
+
 
 FolderInfo::~FolderInfo()
 {
@@ -78,33 +115,30 @@ std::string FolderInfo::info()
     builder += "path: " + path().string() + "\n";
     builder += "size: " + std::to_string(double(size) / 1024 / 1024) + "MB\n";
     builder += "last_modified: " + std::to_string(last_modified) + "\n";
-    builder += "children_count: " + std::to_string(children_count) + "\n";
+    builder += "children_count: " + std::to_string(childrenCount) + "\n";
+    builder += "depth: " + std::to_string(depth) + "\n";
     return builder;
-}
-
-FolderInfo *FolderInfo::root()
-{
-    auto *root = this;
-    while (root->parent != nullptr)
-        root = root->parent;
-    return root;
-    // return path.stem();
 }
 
 FolderInfo *FolderInfo::find_tree(const std::vector<std::string> &names, int depth)
 {
 #ifdef ZQ_DEBUG
-    std::cout << "[debug] " << this->name << " find_tree: " << names[depth] << std::endl;
+    std::cout << "[debug] [FolderInfo::find_tree] " << this->name << " find_tree: " << names[depth] << " at depth: " << depth << std::endl;
 #endif
-    for (auto child : children)
+    if (depth > names.size() - 1) 
     {
-        if (child->name == names[depth])
-            return child;
-        else {
-            if (depth == names.size() - 1)
-                return nullptr;
-            else
-                return child->find_tree(names, depth + 1);
+        throw std::runtime_error("[FolderInfo::find_tree] depth out of range");
+    }
+    for (auto child : this->children)
+    {
+        if (child->name == names[depth]) {
+            if (depth == names.size() - 1) {
+#ifdef ZQ_DEBUG
+    std::cout << "[debug] [FolderInfo::find_tree] " << this->name << " founded: " << names[depth] << " at depth: " << depth << std::endl;
+#endif
+                return child;
+            }
+            return child->find_tree(names, depth + 1);
         }
     }
     return nullptr;
@@ -132,33 +166,43 @@ std::filesystem::path FolderInfo::path()
 
 void FolderInfo::scan()
 {
-    if (!(fully_scanned && this->verify()))
+    if (!this->verify())
     {
         this->reset();
-        int count = 0;
         for (const auto &entry : fs::directory_iterator(this->path()))
         {
             if (entry.is_directory())
             {
                 FolderInfo *info = this->find_children(entry.path().filename().string());
-                if (info == nullptr)
+                if (info != nullptr && info->verify())
                 {
-                    info = new FolderInfo(entry.path().filename().string(), this);
-                    this->children.push_back(info);
+                    this->size += info->size;
+                    continue;
                 }
-                info->scan();          // scan again
-                info->_scanned = true; // set flag
-                count += info->children_count;
-                this->dir_count++;
-                this->size += info->size;
+                uintmax_t infoSize = zq_fswalk::getFolderSize(entry.path());
+                this->size += infoSize;
+
+                if (infoSize > 5 * 1024 * 1024) {
+                    if (info == nullptr)
+                    {
+                        this->children.push_back(new FolderInfo(entry.path().filename().string(), this));
+                        this->children.back()->reset();
+                        this->children.back()->fully_scanned = true;
+                        this->children.back()->size = infoSize;
+                    }
+                    else
+                    {
+                        info->reset();
+                        info->fully_scanned = true;
+                        info->size = infoSize;
+                    }
+                }
             }
             else if (entry.is_regular_file())
             {
-                this->file_count++;
                 this->size += fs::file_size(entry.path());
             }
-            this->children_count = this->dir_count + this->file_count + count;
-            this->less_than_5mb = this->size < 5 * 1024 * 1024;
+            this->childrenCount++;
         }
         for (auto it = this->children.begin(); it != this->children.end(); it++)
             if (!(*it)->_scanned)
@@ -171,23 +215,6 @@ void FolderInfo::scan()
 
 inline bool FolderInfo::verify()
 {
-    return zq_fswalk::get_last_modified(this->path()) == this->last_modified;
+    return zq_fswalk::getLastModified(this->path()) == this->last_modified && fully_scanned;
 }
 
-void FolderInfo::reset()
-{
-    last_modified = zq_fswalk::get_last_modified(this->path());
-
-    size = 0;
-    less_than_5mb = false;
-    fully_scanned = false;
-
-    children_count = 0;
-    dir_count = 0;
-    file_count = 0;
-
-    for (auto child : children)
-    {
-        child->_scanned = false; // reset flag
-    }
-}

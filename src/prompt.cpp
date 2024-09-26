@@ -25,7 +25,7 @@ void MY_PROMPT(const fs::path& prompt, bool enter = false) {
 void prompt()
 {
     Console console(fs::current_path());
-    MY_PROMPT(console.cur_path);
+    MY_PROMPT(fs::current_path().string());
 
     HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
     HANDLE hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -61,13 +61,13 @@ void prompt()
                 }
                 std::cout << "\nINPUT: " << _input_line << std::endl;
                 prompt_command(_input_line, console);
-                MY_PROMPT(console.cur_path, true);
+                MY_PROMPT(console.cur_info->path(), true);
                 _input_line.clear();
             }
             else if (strchr(_buffer, '\t') != NULL && _input_line.empty())
             {   
-                command_dir(console.cur_path);
-                MY_PROMPT(console.cur_path, true);
+                console.ls();
+                MY_PROMPT(console.cur_info->path(), true);
             }
             else if (strchr(_buffer, '\b') != NULL)
             {   

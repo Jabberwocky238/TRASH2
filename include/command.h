@@ -4,10 +4,14 @@
 struct Console
 {
     FolderInfo *cur_info;
-    std::filesystem::path cur_path;
+    FolderInfo *root;
+    std::vector<std::string> curPaths;
+    
     Console(const std::filesystem::path &path);
     ~Console();
 
-    bool cd(const std::filesystem::path &path);
-    FolderInfo *scan();
+    std::filesystem::path destination(std::vector<std::string> &paths) const;
+    void cd(const std::filesystem::path &path);
+    void ls();
+    void scan();
 };

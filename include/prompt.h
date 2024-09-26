@@ -8,4 +8,4 @@
 
 void prompt();
 void command_dir(const std::filesystem::path&current_dir);
-bool prompt_command(const std::string &input_line, Console& console);
+void prompt_command(const std::string &input_line, Console& console);

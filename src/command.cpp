@@ -11,76 +11,109 @@ namespace fs = std::filesystem;
 
 Console::Console(const std::filesystem::path &path)
 {
-    this->cur_path = path;
-    // this->cur_info = FolderInfo::init(path);
+    std::vector<std::string> _paths = zq_fswalk::splitPath(path.string());
+    this->curPaths = {};
+    this->root = new FolderInfo(_paths[0]);
+    this->root->depth = 0;
     this->cur_info = nullptr;
     this->cd(path);
 }
 
 Console::~Console()
 {
-    delete this->cur_info->root();
+    delete this->root;
 }
 
-bool Console::cd(const std::filesystem::path &path)
+std::filesystem::path Console::destination(std::vector<std::string> &paths) const
+{
+
+    std::vector<std::string> newPaths = this->curPaths;
+    for (auto &path : paths)
+    {
+        if (path == "..")
+            newPaths.pop_back();
+        else
+            newPaths.push_back(path);
+    }
+    // verify
+    std::filesystem::path newPath = zq_fswalk::joinPath(newPaths);
+    bool is = std::filesystem::is_directory(newPath);
+    if (!is) {
+        throw std::runtime_error("Not a valid destination directory: " + newPath.string());
+    }
+    return newPath;
+}
+
+void Console::cd(const std::filesystem::path &path)
 {
     try
+    {   
+        std::cout << "[info] " << "Will change to directory: " << path.string() << std::endl;
+        std::vector<std::string> path_through;
+        if(path.is_absolute()) 
+        {
+            path_through = zq_fswalk::splitPath(path.string());
+        }
+        else if (path.is_relative())
+        {
+            path_through = zq_fswalk::splitPath(path.string());
+            std::filesystem::path newPath = this->destination(path_through);
+#ifdef ZQ_DEBUG
+    std::cout << "[debug] newPath: " << newPath.string() << std::endl;
+#endif
+            path_through = zq_fswalk::splitPath(newPath.string());
+        }
+        this->curPaths = path_through;
+        path_through.erase(path_through.begin()); // erase the disk symbol
+#ifdef ZQ_DEBUG
+    std::cout << "[debug] path: ";
+    for (auto &path : path_through)
     {
-        fs::current_path(path);
-        this->cur_path = fs::current_path();
-        // this->cur_path.string();
-        std::vector<std::string> path_through = zq_fswalk::split_path(this->cur_path.string());
-        // for (auto &name : path_through)
-        // {
-        //     std::cout << "[debug] " << name << std::endl;
-        // }
-        // std::vector<std::string> path_through = {};
-        std::cout << "[info] " << "Change to directory: " << this->cur_path << std::endl;
-
+        std::cout << path << " - ";
+    }
+    std::cout << std::endl;
+#endif
         if (this->cur_info != nullptr)
         {
             // not null and found
-            // std::cout << "[info] " << "cur_info is not nullptr" << std::endl;
-            if (this->cur_info->root()->find_tree(path_through, 1) != nullptr)
+            auto *_to = this->root->find_tree(path_through, 0);
+            if (_to != nullptr)
             {
-                this->cur_info = this->cur_info->root()->find_tree(path_through, 1);
-                std::cout << "[info] " << "founded" << std::endl;
-                return true;
+                this->cur_info = _to;
+                return;
             }
         }
-        std::cout << "[info] " << "cur_info is nullptr, Need to build new folder info" << std::endl;
+        std::cout << "[info] " << "Not found pointer, Need to build new folder info" << std::endl;
 
-        FolderInfo *root = this->cur_info != nullptr ? this->cur_info->root() : new FolderInfo(path_through[0], nullptr);
-        std::string _path = path_through[0];
-        path_through.erase(path_through.begin());
-
+        FolderInfo *info = this->root;
+        
         for (auto &name : path_through)
         {
-            auto *child = root->find_children(name);
-            // std::cout << "[info] " << "build: " << info << std::endl;
+            auto *child = info->find_children(name);
             if (child == nullptr)
             {
-                // std::cout << "[info] " << "create" << std::endl;
-                child = new FolderInfo(name, root);
-                root->children.push_back(child);
+                child = new FolderInfo(name, info);
+                child->reset();
+                info->children.push_back(child);
+#ifdef ZQ_DEBUG
+    std::cout << "[debug] new child: " << name << std::endl;
+#endif
             }
-            root = child;
-            // std::cout << "[info] " << "root update: " << root << std::endl;
+            info = child;
         }
-        this->cur_info = root;
-        return true;
+        this->cur_info = info;
+        return;
     }
     catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
     }
-    return false;
+    return;
 }
 
-FolderInfo *Console::scan()
+void Console::scan()
 {
     this->cur_info->scan();
-    return this->cur_info;
 }
 
 inline std::string parse_command(const std::string &input_line)
@@ -110,34 +143,31 @@ void command_dir(const fs::path &current_dir)
     }
 }
 
-bool prompt_command(const std::string &input_line, Console &console)
+void Console::ls()
+{
+    command_dir(this->cur_info->path());
+}
+
+
+void prompt_command(const std::string &input_line, Console &console)
 {
     std::string command = parse_command(input_line);
 
     if (command == "cd")
     {
-        if (fs::is_directory(input_line.substr(3)))
-        {
-            return console.cd(input_line.substr(3));
-        }
-        else
-        {
-            std::cerr << "No such directory: " << input_line.substr(3) << std::endl;
-        }
+        console.cd(input_line.substr(3));
     }
     else if (command == "ls")
     {
-        command_dir(console.cur_path);
+        console.ls();
     }
     else if (command == "scan")
     {
-        FolderInfo *info = console.scan();
-        std::cout << info->info() << std::endl;
-        delete info;
+        console.scan();
+        std::cout << console.cur_info->info() << std::endl;
     }
     else
     {
         std::cerr << "Unknown command: " << input_line << std::endl;
     }
-    return true;
 }
