@@ -7,7 +7,7 @@
 #include <vector>
 #include <chrono>
 
-FolderInfo::FolderInfo(const std::string &dir_name, FolderInfo *parent): parent(parent), name(dir_name)
+ZFolderInfo::ZFolderInfo(const std::string &dir_name, ZFolderInfo *parent): parent(parent), name(dir_name)
 {
 #ifdef ZQ_DEBUG
     std::cout << "[debug] [FolderInfo] [contructor]: " << this->path().string() << std::endl;
@@ -19,7 +19,7 @@ FolderInfo::FolderInfo(const std::string &dir_name, FolderInfo *parent): parent(
     depth = parent->depth + 1;
     children = {};
 }
-FolderInfo::FolderInfo(const std::string &dir_name): parent(nullptr), name(dir_name)
+ZFolderInfo::ZFolderInfo(const std::string &dir_name): parent(nullptr), name(dir_name)
 {
 #ifdef ZQ_DEBUG
     std::cout << "[debug] [FolderInfo] [contructor]: " << dir_name << std::endl;
@@ -32,7 +32,7 @@ FolderInfo::FolderInfo(const std::string &dir_name): parent(nullptr), name(dir_n
     children = {};
 }
 
-void FolderInfo::reset()
+void ZFolderInfo::reset()
 {
     this->size = 0;
     this->last_modified = zq_fswalk::getLastModified(this->path());
@@ -45,13 +45,13 @@ void FolderInfo::reset()
     }
 }
 
-FolderInfo::~FolderInfo()
+ZFolderInfo::~ZFolderInfo()
 {
     for (auto child : children)
         delete child;
 }
 
-std::string FolderInfo::info()
+std::string ZFolderInfo::info()
 {
     std::string builder;
     builder += "name: " + name + "\n";
@@ -63,7 +63,7 @@ std::string FolderInfo::info()
     return builder;
 }
 
-FolderInfo *FolderInfo::find_tree(const std::vector<std::string> &names, int depth)
+ZFolderInfo *ZFolderInfo::find_tree(const std::vector<std::string> &names, int depth)
 {
 #ifdef ZQ_DEBUG
     std::cout << "[debug] [FolderInfo::find_tree] " << this->name << " find_tree: " << names[depth] << " at depth: " << depth << std::endl;
@@ -87,7 +87,7 @@ FolderInfo *FolderInfo::find_tree(const std::vector<std::string> &names, int dep
     return nullptr;
 }
 
-FolderInfo *FolderInfo::find_children(const std::string &_name)
+ZFolderInfo *ZFolderInfo::find_children(const std::string &_name)
 {
     for (auto child : children)
         if (child->name == _name)
@@ -95,7 +95,7 @@ FolderInfo *FolderInfo::find_children(const std::string &_name)
     return nullptr;
 }
 
-std::filesystem::path FolderInfo::path()
+std::filesystem::path ZFolderInfo::path()
 {
     std::string builder = this->name;
     auto _parent = this->parent;
@@ -107,7 +107,7 @@ std::filesystem::path FolderInfo::path()
     return builder;
 }
 
-void FolderInfo::scan()
+void ZFolderInfo::scan()
 {
     if (!this->verify())
     {
@@ -116,7 +116,7 @@ void FolderInfo::scan()
         {
             if (entry.is_directory())
             {
-                FolderInfo *info = this->find_children(entry.path().filename().string());
+                ZFolderInfo *info = this->find_children(entry.path().filename().string());
                 if (info != nullptr && info->verify())
                 {
                     this->size += info->size;
@@ -128,7 +128,7 @@ void FolderInfo::scan()
                 if (infoSize > 5 * 1024 * 1024) {
                     if (info == nullptr)
                     {
-                        this->children.push_back(new FolderInfo(entry.path().filename().string(), this));
+                        this->children.push_back(new ZFolderInfo(entry.path().filename().string(), this));
                         this->children.back()->reset();
                         this->children.back()->fully_scanned = true;
                         this->children.back()->size = infoSize;
@@ -156,7 +156,7 @@ void FolderInfo::scan()
     this->fully_scanned = true;
 }
 
-inline bool FolderInfo::verify()
+inline bool ZFolderInfo::verify()
 {
     return zq_fswalk::getLastModified(this->path()) == this->last_modified && fully_scanned;
 }

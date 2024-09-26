@@ -8,22 +8,22 @@
 
 namespace fs = std::filesystem;
 
-Console::Console(const std::filesystem::path &path)
+ZConsole::ZConsole(const std::filesystem::path &path)
 {
     std::vector<std::string> _paths = zq_fswalk::splitPath(path.string());
     this->curPaths = {};
-    this->root = new FolderInfo(_paths[0]);
+    this->root = new ZFolderInfo(_paths[0]);
     this->root->depth = 0;
     this->cur_info = nullptr;
     this->cd(path);
 }
 
-Console::~Console()
+ZConsole::~ZConsole()
 {
     delete this->root;
 }
 
-std::filesystem::path Console::destination(std::vector<std::string> &paths) const
+std::filesystem::path ZConsole::destination(std::vector<std::string> &paths) const
 {
 
     std::vector<std::string> newPaths = this->curPaths;
@@ -43,7 +43,7 @@ std::filesystem::path Console::destination(std::vector<std::string> &paths) cons
     return newPath;
 }
 
-void Console::cd(const std::filesystem::path &path)
+void ZConsole::cd(const std::filesystem::path &path)
 {
     try
     {   
@@ -84,14 +84,14 @@ void Console::cd(const std::filesystem::path &path)
         }
         std::cout << "[info] " << "Not found pointer, Need to build new folder info" << std::endl;
 
-        FolderInfo *info = this->root;
+        ZFolderInfo *info = this->root;
         
         for (auto &name : path_through)
         {
             auto *child = info->find_children(name);
             if (child == nullptr)
             {
-                child = new FolderInfo(name, info);
+                child = new ZFolderInfo(name, info);
                 child->reset();
                 info->children.push_back(child);
 #ifdef ZQ_DEBUG
@@ -110,14 +110,14 @@ void Console::cd(const std::filesystem::path &path)
     return;
 }
 
-void Console::scan()
+void ZConsole::scan()
 {
     this->cur_info->scan();
 }
 
 
 
-void Console::ls()
+void ZConsole::ls()
 {
     size_t _cnt = 0;
     std::cout << std::endl;

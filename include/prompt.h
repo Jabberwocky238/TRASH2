@@ -14,7 +14,7 @@ namespace zq_fswalk
     std::filesystem::path joinPath(const std::vector<std::string> &path);
 }
 
-struct FolderInfo
+struct ZFolderInfo
 {
 private:
     std::string name;
@@ -27,31 +27,31 @@ public:
     int childrenCount;
     int depth;
 
-    FolderInfo *parent;
-    std::vector<FolderInfo *> children;
+    ZFolderInfo *parent;
+    std::vector<ZFolderInfo *> children;
 
-    FolderInfo(const std::string &dir_name);
-    FolderInfo(const std::string &dir_name, FolderInfo *parent);
-    ~FolderInfo();
+    ZFolderInfo(const std::string &dir_name);
+    ZFolderInfo(const std::string &dir_name, ZFolderInfo *parent);
+    ~ZFolderInfo();
 
     std::string info();
     // FolderInfo *root();
-    FolderInfo *find_tree(const std::vector<std::string> &names, int depth);
-    FolderInfo *find_children(const std::string &name);
+    ZFolderInfo *find_tree(const std::vector<std::string> &names, int depth);
+    ZFolderInfo *find_children(const std::string &name);
     std::filesystem::path path();
     void scan();
     bool verify();
     void reset();
 };
 
-struct Console
+struct ZConsole
 {
-    FolderInfo *cur_info;
-    FolderInfo *root;
+    ZFolderInfo *cur_info;
+    ZFolderInfo *root;
     std::vector<std::string> curPaths;
     
-    Console(const std::filesystem::path &path);
-    ~Console();
+    ZConsole(const std::filesystem::path &path);
+    ~ZConsole();
 
     std::filesystem::path destination(std::vector<std::string> &paths) const;
     void cd(const std::filesystem::path &path);

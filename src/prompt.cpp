@@ -19,7 +19,7 @@ void MY_PROMPT(const fs::path& prompt, bool enter = false) {
     std::cout << "[" << prompt << "]> ";
 }
 
-void prompt_command(const std::string &input_line, Console &console)
+void prompt_command(const std::string &input_line, ZConsole &console)
 {
     std::string command = parse_command(input_line);
 
@@ -44,7 +44,7 @@ void prompt_command(const std::string &input_line, Console &console)
     
 void prompt()
 {
-    Console console(fs::current_path());
+    ZConsole console(fs::current_path());
     MY_PROMPT(fs::current_path().string());
 
     HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
