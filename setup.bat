@@ -4,7 +4,6 @@ if "%~1"=="" (
     echo Usage: "setup [command=build|run|clean]"
     exit /b
 )
-goto :eof
 
 REM 定义命令
 echo "[Command]: %~1"
@@ -13,7 +12,6 @@ if "%~1"=="build" (
     call :build
 ) else if "%~1"=="run" (
     echo Running the project...
-    call :build
     call :run
 ) else if "%~1"=="clean" (
     echo Clean the project...
@@ -38,6 +36,12 @@ echo Clean completed successfully.
 goto :eof
 
 :run
+call :build
+if %ERRORLEVEL% NEQ 0 (
+    echo CMake failed to generate the Makefile.
+    exit /b %ERRORLEVEL%
+    goto :eof
+)
 REM 切换到脚本所在目录
 cd /d "%~dp0"
 REM 运行项目
@@ -55,14 +59,18 @@ cmake ..
 REM 检查cmake是否成功
 if %ERRORLEVEL% NEQ 0 (
     echo CMake failed to generate the Makefile.
+    cd ..
     exit /b %ERRORLEVEL%
+    goto :eof
 )
 REM 运行make来构建项目
 cmake --build . --config Debug --target ALL_BUILD
 REM 检查make是否成功
 if %ERRORLEVEL% NEQ 0 (
     echo MSBuild failed to build the project.
+    cd ..
     exit /b %ERRORLEVEL%
+    goto :eof
 )
 echo Build completed successfully.
 cd ..
