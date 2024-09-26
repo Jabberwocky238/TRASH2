@@ -12,13 +12,6 @@ inline std::string parse_command(const std::string &input_line)
     return input_line.find(' ') == std::string::npos ? input_line : input_line.substr(0, input_line.find(' '));
 }
 
-void MY_PROMPT(const fs::path& prompt, bool enter = false) {
-    if (enter) {
-        std::cout << std::endl;
-    }
-    std::cout << "[" << prompt << "]> ";
-}
-
 void prompt_command(const std::string &input_line, ZConsole &console)
 {
     std::string command = parse_command(input_line);
@@ -45,7 +38,7 @@ void prompt_command(const std::string &input_line, ZConsole &console)
 void prompt()
 {
     ZConsole console(fs::current_path());
-    MY_PROMPT(fs::current_path().string());
+    console.PROMPTING();
 
     HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
     HANDLE hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -69,9 +62,8 @@ void prompt()
         
         if (_cNumRead > 0)
         {
-            _buffer[_cNumRead] = '\0';
-            std::string command = parse_command(_input_line);
-            
+            _buffer[_cNumRead] = '\0';        
+                
             if (strchr(_buffer, '\r') != NULL)
             {
                 if (_input_line == "exit" || _input_line == "quit" || _input_line == "q")
@@ -80,13 +72,13 @@ void prompt()
                     break;
                 }
                 prompt_command(_input_line, console);
-                MY_PROMPT(console.cur_info->path(), true);
+                console.PROMPTING(true);
                 _input_line.clear();
             }
             else if (strchr(_buffer, '\t') != NULL && _input_line.empty())
             {   
                 console.ls();
-                MY_PROMPT(console.cur_info->path(), true);
+                console.PROMPTING(true);
             }
             else if (strchr(_buffer, '\b') != NULL)
             {   

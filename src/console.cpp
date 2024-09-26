@@ -115,7 +115,13 @@ void ZConsole::scan()
     this->cur_info->scan();
 }
 
-
+void ZConsole::PROMPTING(bool enter)
+{
+    if (enter) {
+        std::cout << std::endl;
+    }
+    std::cout << "[" << prompt << "]> ";
+}
 
 void ZConsole::ls()
 {

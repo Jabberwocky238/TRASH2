@@ -57,6 +57,8 @@ struct ZConsole
     void cd(const std::filesystem::path &path);
     void ls();
     void scan();
+
+    void PROMPTING(bool enter = true);
 };
 
 
