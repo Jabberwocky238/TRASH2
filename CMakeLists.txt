@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.5)
 
 # 项目名称
 project(MyProject VERSION 0.0.1 LANGUAGES CXX)
-include(CTest)
+# include(CTest)
+enable_testing()
 
 # 设置C++标准为C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -19,4 +20,5 @@ include_directories(${ZSRC_BASE_DIR})
 
 # 添加子目录
 add_subdirectory(src)
+add_subdirectory(test)
 
