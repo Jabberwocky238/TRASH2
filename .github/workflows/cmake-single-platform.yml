@@ -31,7 +31,7 @@ jobs:
         arch: x64
 
     - name: Configure CMake
-      run: cmake -G ${{env.CMAKE_GENERATOR}} -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_BUILD_TYPE}}
+      run: cmake -G "${{env.CMAKE_GENERATOR}}" -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_BUILD_TYPE}}
 
     - name: Build
       run: cmake --build build --config ${{env.CMAKE_BUILD_TYPE}}
