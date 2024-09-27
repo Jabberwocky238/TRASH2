@@ -23,10 +23,10 @@ ZConsole::~ZConsole()
     this->root.reset();
 }
 
-std::vector<std::string> ZConsole::destination(std::vector<std::string> &paths)
+std::vector<std::string> ZConsole::destination(Paths_Ty &paths)
 {
 
-    std::vector<std::string> newPaths = this->curPaths;
+    Paths_Ty newPaths = this->curPaths;
     for (auto &path : paths)
     {
         if (path == "..")
@@ -46,7 +46,9 @@ std::vector<std::string> ZConsole::destination(std::vector<std::string> &paths)
 
 void ZConsole::cd(const std::filesystem::path &path)
 {
+#if ZQ_INFO
     std::cout << "[info] " << "Will change to directory: " << path.string() << std::endl;
+#endif
     Paths_Ty path_through;
     if (path.is_absolute())
     {

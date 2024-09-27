@@ -3,12 +3,15 @@
 #include <unordered_set>
 #include <memory>
 #include <iostream>
+
 // using ZIdentifier = std::string;
 // using ZParent = std::optional<std::weak_ptr<ZFdNode>>;
 
 ZFdNode::ZFdNode(const ZIdentifier &id, ZParent parent): parent(parent), id(id)
 {
-    std::cout << "Creating node: " << id << std::endl;
+#if ZQ_DEBUG
+    std::cout << "[debug] Creating node: " << id << std::endl;
+#endif
     this->size = 0;
     this->children_count = 0;
     this->last_modified = 0;
@@ -39,12 +42,12 @@ std::shared_ptr<ZFdNode> ZFdNode::locate(const ZIdentifier &id)
 }
 std::string ZFdNode::print()
 {
-    std::string builder;
+    std::string builder = "\n";
     builder += "Name: " + id + "\n";
     builder += "Path: " + path().string() + "\n";
-    builder += "Size: " + std::to_string(size) + "\n";
+    builder += "Size: " + std::to_string(float(size / 1024) / 1024) + "MB\n";
     builder += "Children Count: " + std::to_string(children_count) + "\n";
-    builder += "Last Modified: " + std::to_string(last_modified) + "\n";
+    builder += "Last Modified: " + std::string(std::ctime(&last_modified)) + "\n";
     return builder;
 }
 

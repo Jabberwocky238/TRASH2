@@ -66,7 +66,7 @@ void prompt()
         if (_cNumRead > 0)
         {
             _buffer[_cNumRead] = '\0';
-
+        
             if (strchr(_buffer, '\r') != NULL)
             {
                 if (_input_line == "exit" || _input_line == "quit" || _input_line == "q")
@@ -82,6 +82,7 @@ void prompt()
             {
                 console.ls();
                 console.PROMPTING(true);
+                _input_line.clear();
             }
             else if (strchr(_buffer, '\b') != NULL)
             {
@@ -93,8 +94,6 @@ void prompt()
             }
             else
             {
-                // const char *fixedContent = "Fixed Content";
-                // WriteConsole(hOutput, fixedContent, strlen(fixedContent), &cNumRead, NULL);
                 WriteConsole(hOutput, _buffer, _cNumRead, &_cNumRead, NULL);
                 _input_line += _buffer;
             }
@@ -104,4 +103,3 @@ void prompt()
     SetConsoleMode(hInput, oldMode);
     return;
 }
-

@@ -6,7 +6,7 @@
 
 # 使用方法
 ```bash
-demo -c -i ./ -o ./output.json
+demo -i ./ -o ./output.json
 demo # 直接命令行交互
 ```
 

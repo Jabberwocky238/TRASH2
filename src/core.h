@@ -1,4 +1,6 @@
 #pragma once
+#define ZQ_DEBUG
+
 #include "zfs/fdnode.h"
 #include "zfs/zutils.h"
 #include "zconsole.h"
@@ -8,8 +10,6 @@
 #include <string>
 #include <vector>
 #include <meojson/include/json.hpp>
-
-#define ZQ_DEBUG
 
 void prompt();
 // void zq_serialize(const ZConsole &console, json::value& j);
