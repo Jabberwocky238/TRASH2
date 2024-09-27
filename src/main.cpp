@@ -1,4 +1,3 @@
-#include "core.h"
 #include "prompt.h"
 #include <cxxopts/include/cxxopts.hpp>
 
@@ -6,9 +5,13 @@
 
 int main(int argc, char* argv[]) {
     cxxopts::Options options("MyProgram", "One line description of MyProgram");
+    std::string default_output_file_name = "output.json";
+#ifdef ZQ_DEBUG
+    default_output_file_name = "bin/output.json";
+#endif
     options.add_options()
         ("i,input", "input dir path", cxxopts::value<std::string>()->default_value(""))
-        ("o,output", "output file path", cxxopts::value<std::string>()->default_value("output.json"))
+        ("o,output", "output file path", cxxopts::value<std::string>()->default_value(default_output_file_name))
     ;
 
     auto result = options.parse(argc, argv);

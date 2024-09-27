@@ -1,6 +1,9 @@
 [submodule "thirdparty/cxxopts"]
 	path = thirdparty/cxxopts
-	url = https://github.com/jarro2783/cxxopts
+	url = https://github.com/jarro2783/cxxopts.git
 [submodule "thirdparty/meojson"]
 	path = thirdparty/meojson
-	url = https://github.com/MistEO/meojson
+	url = https://github.com/MistEO/meojson.git
+[submodule "thirdparty/doctest"]
+	path = thirdparty/doctest
+	url = https://github.com/doctest/doctest.git
