@@ -2,12 +2,13 @@
 #include "zutils.h"
 #include <unordered_set>
 #include <memory>
-
+#include <iostream>
 // using ZIdentifier = std::string;
 // using ZParent = std::optional<std::weak_ptr<ZFdNode>>;
 
 ZFdNode::ZFdNode(const ZIdentifier &id, ZParent parent): parent(parent), id(id)
 {
+    std::cout << "Creating node: " << id << std::endl;
     this->size = 0;
     this->children_count = 0;
     this->last_modified = 0;

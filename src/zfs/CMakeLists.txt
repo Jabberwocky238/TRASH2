@@ -1,7 +1,7 @@
 # 项目名称
 project(zfs)
 
-add_library(${PROJECT_NAME} SHARED 
+add_library(${PROJECT_NAME} STATIC 
 fdnode.cc
 zutils.cc
 )

@@ -1,4 +1,4 @@
-#include "prompt.h"
+#include "core.h"
 #include <cxxopts/include/cxxopts.hpp>
 
 #include <iostream>
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     if (input_folder == "") {
         prompt();
     } else {
-        dump(input_folder, output_file_name);
+        // dump(input_folder, output_file_name);
     }
     return EXIT_SUCCESS;
 }
