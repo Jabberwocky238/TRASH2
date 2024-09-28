@@ -17,8 +17,8 @@ struct ZConsole
     ZConsole();
     ~ZConsole();
 
-    Paths_Ty destination(Paths_Ty &paths);
-    void cd(const std::filesystem::path &path);
+    std::filesystem::path destination(std::filesystem::path &paths);
+    void cd(std::filesystem::path &path);
     void ls();
     void scan();
 
