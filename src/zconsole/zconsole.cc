@@ -80,12 +80,12 @@ std::filesystem::path ZConsole::destination(std::filesystem::path &paths)
         std::cout << path << " - ";
     }
     std::cout << std::endl;
-    std::cout << "[debug][ZConsole::destination] path: " << newPath.string() << std::endl;
+    std::wcout << L"[debug][ZConsole::destination] path: " << newPath.wstring() << std::endl;
 #endif
-    bool is = std::filesystem::is_directory(_getPath(newPath.string()));
+    bool is = std::filesystem::is_directory(newPath.wstring());
     if (!is)
     {
-        throw zutils::error("Directory is not exist: " + newPath.string());
+        throw zutils::error(L"Directory is not exist: " + newPath.wstring());
     }
     return _getPath(newPath.string());
 }

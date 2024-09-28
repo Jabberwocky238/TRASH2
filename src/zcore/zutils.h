@@ -19,20 +19,20 @@ namespace zutils
     class error : public std::exception
     {
     private:
-        std::string message;
+        std::wstring message;
 
     public:
-        error(const std::string &msg);
+        error(const std::wstring &msg);
         virtual const char *what() const noexcept;
     };
 
     class fatal : public std::exception
     {
     private:
-        std::string message;
+        std::wstring message;
 
     public:
-        fatal(const std::string &msg);
+        fatal(const std::wstring &msg);
         virtual const char *what() const noexcept;
     };
 }

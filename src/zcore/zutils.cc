@@ -1,18 +1,26 @@
 #include "zutils.h"
 
+#include <Windows.h>
 #include <sstream>
+
+inline static std::string wchar_to_char(const std::wstring& wstr) {
+    int required_size = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    std::string str(required_size, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &str[0], required_size, nullptr, nullptr);
+    return str;
+}
 
 namespace zutils
 {
-    error::error(const std::string &msg) : message(msg) {}
+    error::error(const std::wstring &msg) : message(msg) {}
     const char *error::what() const noexcept
     {
-        return message.c_str();
+        return wchar_to_char(message).c_str();
     }
-    fatal::fatal(const std::string &msg) : message(msg) {}
+    fatal::fatal(const std::wstring &msg) : message(msg) {}
     const char *fatal::what() const noexcept
     {
-        return message.c_str();
+        return wchar_to_char(message).c_str();
     }
 
     bool isChinese(char32_t ch)

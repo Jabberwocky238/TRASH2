@@ -5,25 +5,22 @@
 #include <Windows.h>
 #include <iostream>
 #include <filesystem>
-#include <string>
+#include <xstring>
 #include <vector>
 #include <tuple>
 #include <variant>
-#include <codecvt>
-#include <system_error>
-#include <charconv>
 
 namespace fs = std::filesystem;
 
-using _Cmd_Ty = std::string;
+using _Cmd_Ty = std::wstring;
 using _Cmd_V = std::variant<
-    std::string,
-    std::vector<std::string>,
+    std::wstring,
+    std::vector<std::wstring>,
     std::nullopt_t>;
 
-inline static std::vector<std::string> parse_args(const std::string &input_line)
+inline static std::vector<std::wstring> parse_args(const std::wstring &input_line)
 {
-    std::vector<std::string> result = {""};
+    std::vector<std::wstring> result = { L"" };
     bool has_quote = false;
     for (auto &i : input_line)
     {
@@ -36,7 +33,7 @@ inline static std::vector<std::string> parse_args(const std::string &input_line)
         if (i == ' ' && !has_quote)
         {
             // brand new arg
-            result.push_back("");
+            result.push_back(L"");
             continue;
         }
         result.back().push_back(i);
@@ -44,26 +41,26 @@ inline static std::vector<std::string> parse_args(const std::string &input_line)
     return result;
 }
 
-inline static std::tuple<_Cmd_Ty, _Cmd_V> parse_command(const std::string &input_line)
+inline static std::tuple<_Cmd_Ty, _Cmd_V> parse_command(const std::wstring &input_line)
 {
     auto _first_space = input_line.find(' ');
-    if (_first_space == std::string::npos)
+    if (_first_space == std::wstring::npos)
     {
         return std::make_tuple(input_line, std::nullopt);
     }
     else
     {
-        std::string command = input_line.substr(0, _first_space);
-        std::string args = input_line.substr(_first_space + 1);
-        std::vector<std::string> _split = parse_args(args);
+        auto command = input_line.substr(0, _first_space);
+        auto args = input_line.substr(_first_space + 1);
+        auto _split = parse_args(args);
 #ifdef ZQ_DEBUG
-        std::cout << "[DEBUG] command: " << command << std::endl;
-        std::cout << "[DEBUG] args: ";
+        std::wcout << "[DEBUG] command: " << command << std::endl;
+        std::wcout << "[DEBUG] args: ";
         for (auto &i : _split)
         {
-            std::cout << i << "|";
+            std::wcout << i << "|";
         }
-        std::cout << std::endl;
+        std::wcout << std::endl;
 #endif
         if (_split.size() == 1)
         {
@@ -93,9 +90,8 @@ void ZConsole::run()
 
     DWORD dwRead;
     INPUT_RECORD irIn[1024]; // 可以一次读取多个事件
-    std::string _input_line;
+    std::wstring _input_line;
 
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
     bool not_enter = false;
 
     try
@@ -136,26 +132,26 @@ void ZConsole::run()
                             if (!_input_line.empty())
                             {
                                 auto [command, value] = parse_command(_input_line);
-                                if (command == "cd")
+                                if (command == L"cd")
                                 {
-                                    if (std::holds_alternative<std::string>(value))
+                                    if (std::holds_alternative<std::wstring>(value))
                                     {
-                                        std::filesystem::path path_to = std::get<std::string>(value);
+                                        std::filesystem::path path_to = std::get<std::wstring>(value);
                                         console.cd(path_to);
                                     }
                                     else
-                                        throw zutils::error("Invalid argument: " +  _input_line);
+                                        throw zutils::error(L"Invalid argument: " + _input_line);
                                 }
-                                else if (command == "ls")
+                                else if (command == L"ls")
                                 {
                                     if (std::holds_alternative<std::nullopt_t>(value))
                                     {
                                         console.ls();
                                     }
                                     else
-                                        throw zutils::error("Not support ls with argument");
+                                        throw zutils::error(L"Not support ls with argument");
                                 }
-                                else if (command == "scan")
+                                else if (command == L"scan")
                                 {
                                     if (std::holds_alternative<std::nullopt_t>(value))
                                     {
@@ -163,10 +159,10 @@ void ZConsole::run()
                                         console.info();
                                     }
                                     else
-                                        throw zutils::error("Command 'scan' should not have argument");
+                                        throw zutils::error(L"Command 'scan' should not have argument");
                                 }
                                 else
-                                    throw zutils::error("Unknown command: " + command);
+                                    throw zutils::error(L"Unknown command: " + command);
                                 _input_line.clear();
                             }
                             console.PROMPTING(true);
@@ -176,12 +172,9 @@ void ZConsole::run()
                             if (!_input_line.empty())
                             {
                                 auto last = _input_line.back();
-                                wchar_t unicode_char;
-                                std::mbtowc(&unicode_char, &last, sizeof(last));
-                                if(zutils::isChinese(unicode_char)) 
+                                if(zutils::isChinese(last)) 
                                 {
                                     std::cout << "\b\b  \b\b";
-                                    _input_line.pop_back();
                                     _input_line.pop_back();
                                 }
                                 else
@@ -204,9 +197,9 @@ void ZConsole::run()
                                 irIn[i].Event.KeyEvent.wVirtualKeyCode != VK_BACK &&
                                 irIn[i].Event.KeyEvent.uChar.UnicodeChar != 0)
                             {
-                                std::string __char = converter.to_bytes(irIn[i].Event.KeyEvent.uChar.UnicodeChar);
+                                auto __char = irIn[i].Event.KeyEvent.uChar.UnicodeChar;
                                 _input_line += __char;
-                                std::cout << __char;
+                                std::wcout << __char;
                             }
                         }
                         // std::cout << dwRead << ": " << _input_line << std::endl;
@@ -228,6 +221,7 @@ void ZConsole::run()
     catch (const std::exception &e)
     {
         std::cerr << e.what() << std::endl;
+        std::cerr << GetLastError() << std::endl;
     }
     SetConsoleMode(hConsole, oldMode); // 恢复控制台模式
     return;
