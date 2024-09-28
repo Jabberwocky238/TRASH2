@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     std::string output_file_name = result["output"].as<std::string>();
     
     if (input_folder == "") {
-        prompt();
+        ZConsole::run();
     } else {
         // dump(input_folder, output_file_name);
     }

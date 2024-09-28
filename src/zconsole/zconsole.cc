@@ -10,11 +10,11 @@
 
 namespace fs = std::filesystem;
 
-ZConsole::ZConsole(const std::filesystem::path &path)
+ZConsole::ZConsole()
 {
-    std::vector<std::string> _paths = zutils::splitPath(path.string());
+    auto path = fs::current_path();
     this->curPaths = {};
-    this->root = std::make_shared<ZFdNode>(_paths[0]);
+    this->root = std::make_shared<ZFdNode>(path.root_name().string());
     this->curNode = this->root;
     this->cd(path);
 }

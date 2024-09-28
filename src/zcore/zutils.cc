@@ -1,5 +1,7 @@
 #include "zutils.h"
 
+#include <sstream>
+
 namespace zutils
 {
     time_t getLastModified(const std::filesystem::path &path)
@@ -54,5 +56,16 @@ namespace zutils
             builder += path + "/";
         }
         return builder;
+    }
+    std::vector<std::string> splitString(const std::string &str, char delimiter)
+    {
+        std::vector<std::string> tokens;
+        std::istringstream strStream(str);
+        std::string token;
+        while (std::getline(strStream, token, delimiter))
+        {
+            tokens.push_back(token);
+        }
+        return tokens;
     };
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include "zcore/fdnode.h"
-
+#include "zcore/zutils.h"
 
 #include <filesystem>
 #include <string>
@@ -11,10 +11,10 @@ struct ZConsole
     using Paths_Ty = std::vector<std::string>;
 
     std::shared_ptr<ZFdNode> root;
-    Paths_Ty curPaths;
     std::shared_ptr<ZFdNode> curNode;
+    Paths_Ty curPaths;
     
-    ZConsole(const std::filesystem::path &path);
+    ZConsole();
     ~ZConsole();
 
     Paths_Ty destination(Paths_Ty &paths);
@@ -23,5 +23,7 @@ struct ZConsole
     void scan();
 
     void info();
-    void PROMPTING(bool enter = true);
+    void PROMPTING(bool enter = false);
+
+    static void run();
 };

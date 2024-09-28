@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 
 # 项目名称
 project(MyProject VERSION 0.0.1 LANGUAGES CXX)
-# include(CTest)
+include(CTest)
 enable_testing()
 
 # 设置C++标准为C++17
