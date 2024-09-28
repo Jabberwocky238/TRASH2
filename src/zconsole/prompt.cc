@@ -11,6 +11,7 @@
 #include <variant>
 #include <codecvt>
 #include <system_error>
+#include <charconv>
 
 namespace fs = std::filesystem;
 
@@ -93,7 +94,6 @@ void ZConsole::run()
     DWORD dwRead;
     INPUT_RECORD irIn[1024]; // 可以一次读取多个事件
     std::string _input_line;
-    std::wstring _buffer;
 
     std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
     bool not_enter = false;
@@ -102,105 +102,130 @@ void ZConsole::run()
     {
         while (true)
         {
-            not_enter = true;
-            if (ReadConsoleInputW(hConsole, irIn, 1024, &dwRead))
+            try
             {
-                // std::cout << "[ReadConsoleInput success: " << dwRead << ']' << std::endl;
-                // 判断特殊值：回车，TAB, 上下箭头，退格键
-                if (irIn[0].EventType == KEY_EVENT && irIn[0].Event.KeyEvent.bKeyDown)
+                not_enter = true;
+                if (ReadConsoleInputW(hConsole, irIn, 1024, &dwRead))
                 {
-                    switch (irIn[0].Event.KeyEvent.wVirtualKeyCode)
+                    // std::cout << "[ReadConsoleInput success: " << dwRead << ']' << std::endl;
+                    // 判断特殊值：回车，TAB, 上下箭头，退格键
+                    if (irIn[0].EventType == KEY_EVENT && irIn[0].Event.KeyEvent.bKeyDown)
                     {
-                    case VK_UP:
-                        std::cout << "Up arrow key pressed" << std::endl;
-                        break;
-                    case VK_DOWN:
-                        std::cout << "Down arrow key pressed" << std::endl;
-                        break;
-                    case VK_TAB:
-                        std::cout << std::endl;
-                        std::cout << "Tab key pressed" << std::endl;
-                        if (!_input_line.empty())
+                        switch (irIn[0].Event.KeyEvent.wVirtualKeyCode)
                         {
-                            _input_line.clear();
-                        }
-                        console.ls();
-                        console.PROMPTING(true);
-                        break;
-                    case VK_RETURN:
-                        not_enter = false;
-                        std::cout << std::endl;
-                        // std::cout << "Enter key pressed" << std::endl;
-                        if (!_input_line.empty())
-                        {
-                            auto [command, value] = parse_command(_input_line);
-                            if (command == "cd")
+                        case VK_UP:
+                            std::cout << "Up arrow key pressed" << std::endl;
+                            break;
+                        case VK_DOWN:
+                            std::cout << "Down arrow key pressed" << std::endl;
+                            break;
+                        case VK_TAB:
+                            std::cout << std::endl;
+                            std::cout << "Tab key pressed" << std::endl;
+                            if (!_input_line.empty())
                             {
-                                if (std::holds_alternative<std::string>(value))
+                                _input_line.clear();
+                            }
+                            console.ls();
+                            console.PROMPTING(true);
+                            break;
+                        case VK_RETURN:
+                            not_enter = false;
+                            std::cout << std::endl;
+                            // std::cout << "Enter key pressed" << std::endl;
+                            if (!_input_line.empty())
+                            {
+                                auto [command, value] = parse_command(_input_line);
+                                if (command == "cd")
                                 {
-                                    std::filesystem::path path_to = std::get<std::string>(value);
-                                    console.cd(path_to);
+                                    if (std::holds_alternative<std::string>(value))
+                                    {
+                                        std::filesystem::path path_to = std::get<std::string>(value);
+                                        console.cd(path_to);
+                                    }
+                                    else
+                                        throw zutils::error("Invalid argument: " +  _input_line);
+                                }
+                                else if (command == "ls")
+                                {
+                                    if (std::holds_alternative<std::nullopt_t>(value))
+                                    {
+                                        console.ls();
+                                    }
+                                    else
+                                        throw zutils::error("Not support ls with argument");
+                                }
+                                else if (command == "scan")
+                                {
+                                    if (std::holds_alternative<std::nullopt_t>(value))
+                                    {
+                                        console.scan();
+                                        console.info();
+                                    }
+                                    else
+                                        throw zutils::error("Command 'scan' should not have argument");
                                 }
                                 else
-                                    std::cerr << "Invalid argument: " << _input_line << std::endl;
+                                    throw zutils::error("Unknown command: " + command);
+                                _input_line.clear();
                             }
-                            else if (command == "ls")
+                            console.PROMPTING(true);
+                            break;
+                        case VK_BACK:
+                            // std::cout << "Backspace key pressed" << std::endl;
+                            if (!_input_line.empty())
                             {
-                                if (std::holds_alternative<std::nullopt_t>(value))
+                                auto last = _input_line.back();
+                                wchar_t unicode_char;
+                                std::mbtowc(&unicode_char, &last, sizeof(last));
+                                if(zutils::isChinese(unicode_char)) 
                                 {
-                                    console.ls();
+                                    std::cout << "\b\b  \b\b";
+                                    _input_line.pop_back();
+                                    _input_line.pop_back();
                                 }
                                 else
-                                    std::cerr << "Not support ls with argument" << std::endl;
-                            }
-                            else if (command == "scan")
-                            {
-                                if (std::holds_alternative<std::nullopt_t>(value))
                                 {
-                                    console.scan();
-                                    console.info();
+                                    std::cout << "\b \b";
+                                    _input_line.pop_back();
                                 }
-                                else
-                                    std::cerr << "Command 'scan' should not have argument" << std::endl;
                             }
-                            else
-                                std::cerr << "Unknown command: " << command << std::endl;
-                            _input_line.clear();
+                            break;
                         }
-                        console.PROMPTING(true);
-                        break;
-                    case VK_BACK:
-                        // std::cout << "Backspace key pressed" << std::endl;
-                        if (!_input_line.empty())
-                        {
-                            _input_line.pop_back();
-                            std::cout << "\b \b";
-                        }
-                        break;
                     }
-                }
 
-                if (not_enter)
-                {
-                    for (DWORD i = 0; i < dwRead; i++)
+                    if (not_enter)
                     {
-                        if (irIn[i].EventType == KEY_EVENT &&
-                            irIn[i].Event.KeyEvent.bKeyDown &&
-                            irIn[i].Event.KeyEvent.wVirtualKeyCode != VK_RETURN &&
-                            irIn[i].Event.KeyEvent.wVirtualKeyCode != VK_BACK &&
-                            irIn[i].Event.KeyEvent.uChar.UnicodeChar != 0)
+                        for (DWORD i = 0; i < dwRead; i++)
                         {
-                            std::string __char = converter.to_bytes(irIn[i].Event.KeyEvent.uChar.UnicodeChar);
-                            _input_line += __char;
-                            std::cout << __char;
+                            if (irIn[i].EventType == KEY_EVENT &&
+                                irIn[i].Event.KeyEvent.bKeyDown &&
+                                irIn[i].Event.KeyEvent.wVirtualKeyCode != VK_RETURN &&
+                                irIn[i].Event.KeyEvent.wVirtualKeyCode != VK_BACK &&
+                                irIn[i].Event.KeyEvent.uChar.UnicodeChar != 0)
+                            {
+                                std::string __char = converter.to_bytes(irIn[i].Event.KeyEvent.uChar.UnicodeChar);
+                                _input_line += __char;
+                                std::cout << __char;
+                            }
                         }
+                        // std::cout << dwRead << ": " << _input_line << std::endl;
                     }
-                    // std::cout << dwRead << ": " << _input_line << std::endl;
                 }
+            }
+            catch (const zutils::error &e)
+            {
+                std::cerr << e.what() << std::endl;
+                _input_line.clear();
+                console.PROMPTING(true);
             }
         }
     }
-    catch (std::exception &e)
+    catch (const zutils::fatal &e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
+    catch (const std::exception &e)
     {
         std::cerr << e.what() << std::endl;
     }

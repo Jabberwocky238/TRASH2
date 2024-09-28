@@ -4,6 +4,28 @@
 
 namespace zutils
 {
+    error::error(const std::string &msg) : message(msg) {}
+    const char *error::what() const noexcept
+    {
+        return message.c_str();
+    }
+    fatal::fatal(const std::string &msg) : message(msg) {}
+    const char *fatal::what() const noexcept
+    {
+        return message.c_str();
+    }
+
+    bool isChinese(char32_t ch)
+    {
+        return (ch >= U'\u4E00' && ch <= U'\u9FFF') ||
+               (ch >= U'\u3400' && ch <= U'\u4DBF') ||
+               (ch >= U'\u2000' && ch <= U'\u2A6D') ||
+               (ch >= U'\u2A70' && ch <= U'\u2B73') ||
+               (ch >= U'\u2B74' && ch <= U'\u2B81') ||
+               (ch >= U'\u2B82' && ch <= U'\u2CEA') ||
+               (ch >= U'\u2CEB' && ch <= U'\u2EBE') ||
+               (ch >= U'\u3000' && ch <= U'\u3134');
+    }
     time_t getLastModified(const std::filesystem::path &path)
     {
         std::filesystem::file_time_type ftime = std::filesystem::last_write_time(path);
@@ -68,4 +90,5 @@ namespace zutils
         }
         return tokens;
     };
+
 }

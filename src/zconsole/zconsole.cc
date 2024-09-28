@@ -42,8 +42,6 @@ std::wstring _transformString2Wstring(const std::string &s)
 std::filesystem::path _getPath(const std::string &p)
 {
     std::wstring wdirname = _transformString2Wstring(p);
-
-    // 使用 std::filesystem 和 std::wstring 来创建目录
     std::filesystem::path path(wdirname);
     return path;
 }
@@ -51,26 +49,43 @@ std::filesystem::path _getPath(const std::string &p)
 std::filesystem::path ZConsole::destination(std::filesystem::path &paths)
 {
     paths = _getPath(paths.string()).make_preferred();
-    std::filesystem::path newPath;
-    if (paths.is_relative())
-    {
-        newPath = fs::current_path() / paths;
-    }
-    else if (paths.is_absolute())
-    {
-        newPath = paths;
-    }
-    else
-    {
-        throw std::runtime_error("Not a valid path: " + paths.string());
-    }
+    std::filesystem::path newPath = fs::absolute(paths);
+    // if (paths.is_relative())
+    // {
+    //     Paths_Ty newPaths = this->curPaths;
+    //     for (auto it = paths.begin(); it != paths.end(); it++)
+    //     {
+    //         if (it->filename().string() == "..")
+    //             newPaths.pop_back();
+    //         else if (it->filename().string() == ".")
+    //             continue;
+    //         else
+    //             newPaths.push_back(it->filename().string());
+    //     }
+    //     newPath = zutils::joinPath(newPaths);
+    // }
+    // else if (paths.is_absolute())
+    // {
+    //     newPath = paths;
+    // }
+    // else
+    // {
+    //     throw std::runtime_error("Not a valid path: " + paths.string());
+    // }
+// verify
 #ifdef ZQ_DEBUG
+    std::cout << "[debug][ZConsole::destination] path: ";
+    for (auto &path : newPath)
+    {
+        std::cout << path << " - ";
+    }
+    std::cout << std::endl;
     std::cout << "[debug][ZConsole::destination] path: " << newPath.string() << std::endl;
 #endif
     bool is = std::filesystem::is_directory(_getPath(newPath.string()));
     if (!is)
     {
-        throw std::runtime_error("Directory is not exist: " + newPath.string());
+        throw zutils::error("Directory is not exist: " + newPath.string());
     }
     return _getPath(newPath.string());
 }
@@ -83,11 +98,10 @@ void ZConsole::cd(std::filesystem::path &path)
     std::cout << "[info] " << "Will change to directory: " << path_through.string() << std::endl;
 #endif
     this->curPaths.clear();
-    this->curPaths.push_back(path_through.root_name().string());
-    path_through = path_through.relative_path();
-    for (auto it = path_through.begin(); it != path_through.end(); it++)
+    auto splited_path = zutils::splitPath(path_through.string());
+    for (auto &path : splited_path)
     {
-        this->curPaths.push_back(it->filename().string());
+        this->curPaths.push_back(path);
     }
 #ifdef ZQ_DEBUG
     std::cout << "[DEBUG][ZConsole::cd] path: ";
