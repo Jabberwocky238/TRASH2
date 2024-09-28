@@ -2,9 +2,12 @@
 project(ZMain)
 
 aux_source_directory(. SRC_LIST)
-add_subdirectory(zfs)
 
 add_executable(demo main.cpp ${SRC_LIST})
 
 # 添加头文件和依赖
-target_link_libraries(demo PUBLIC zfs)
+add_subdirectory(zcore)
+add_subdirectory(zconsole)
+
+target_link_libraries(demo PUBLIC zcore)
+target_link_libraries(demo PUBLIC zconsole)

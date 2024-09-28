@@ -1,7 +1,7 @@
 #include "core.h"
-#include "zfs/fdnode.h"
-#include "zfs/zutils.h"
-#include "zconsole.h"
+#include "zcore/fdnode.h"
+#include "zcore/zutils.h"
+#include "zconsole/zconsole.h"
 
 #include <cxxopts/include/cxxopts.hpp>
 #include <iostream>

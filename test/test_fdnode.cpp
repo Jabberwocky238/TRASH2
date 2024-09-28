@@ -1,5 +1,5 @@
 #include "core.h"
-#include "zfs/fdnode.h"
+#include "zcore/fdnode.h"
 
 #include <iostream>
 

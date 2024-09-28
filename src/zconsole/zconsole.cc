@@ -1,6 +1,6 @@
 #include "core.h"
 #include "zconsole.h"
-#include "zfs/zutils.h"
+#include "zcore/zutils.h"
 
 #include <iostream>
 #include <filesystem>

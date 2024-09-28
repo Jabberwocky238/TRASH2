@@ -7,7 +7,7 @@ include_directories(${THIRD_PARTY_BASE_DIR})
 include_directories(${ZSRC_BASE_DIR})
 
 
-target_link_libraries(test_fdnode PUBLIC zfs)
+target_link_libraries(test_fdnode PUBLIC zcore)
 
 add_test(
     NAME test_fdnode
