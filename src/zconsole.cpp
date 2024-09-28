@@ -1,5 +1,6 @@
 #include "core.h"
 #include "zconsole.h"
+#include "zfs/zutils.h"
 
 #include <iostream>
 #include <filesystem>
@@ -46,7 +47,7 @@ std::vector<std::string> ZConsole::destination(Paths_Ty &paths)
 
 void ZConsole::cd(const std::filesystem::path &path)
 {
-#if ZQ_INFO
+#ifdef ZQ_INFO
     std::cout << "[info] " << "Will change to directory: " << path.string() << std::endl;
 #endif
     Paths_Ty path_through;

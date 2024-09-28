@@ -1,6 +1,9 @@
 #include "core.h"
-#include <cxxopts/include/cxxopts.hpp>
+#include "zfs/fdnode.h"
+#include "zfs/zutils.h"
+#include "zconsole.h"
 
+#include <cxxopts/include/cxxopts.hpp>
 #include <iostream>
 
 int main(int argc, char* argv[]) {

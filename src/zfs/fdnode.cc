@@ -9,7 +9,7 @@
 
 ZFdNode::ZFdNode(const ZIdentifier &id, ZParent parent): parent(parent), id(id)
 {
-#if ZQ_DEBUG
+#ifdef ZQ_DEBUG
     std::cout << "[debug] Creating node: " << id << std::endl;
 #endif
     this->size = 0;

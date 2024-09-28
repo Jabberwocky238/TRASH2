@@ -1,3 +1,5 @@
+#include "core.h"
+
 #include <filesystem>
 #include <string>
 #include <vector>

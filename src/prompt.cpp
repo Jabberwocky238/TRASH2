@@ -1,7 +1,6 @@
 
 #include "core.h"
-#include "zfs/fdnode.h"
-#include "zfs/zutils.h"
+#include "zconsole.h"
 
 #include <Windows.h>
 #include <iostream>
@@ -10,7 +9,7 @@
 
 namespace fs = std::filesystem;
 
-inline std::string parse_command(const std::string &input_line)
+inline static std::string parse_command(const std::string &input_line)
 {
     return input_line.find(' ') == std::string::npos ? input_line : input_line.substr(0, input_line.find(' '));
 }

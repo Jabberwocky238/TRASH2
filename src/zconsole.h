@@ -1,11 +1,10 @@
 #pragma once
 #include "zfs/fdnode.h"
-#include "zfs/zutils.h"
-#include <iostream>
+
+
 #include <filesystem>
 #include <string>
 #include <vector>
-#include <meojson/include/json.hpp>
 
 struct ZConsole
 {
