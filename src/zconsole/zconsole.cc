@@ -97,6 +97,7 @@ void ZConsole::cd(std::filesystem::path &path)
 #ifdef ZQ_INFO
     std::cout << "[info] " << "Will change to directory: " << path_through.string() << std::endl;
 #endif
+    // JW238: there must use [zutils::splitPath] to decouple wstring, because I am afraid.
     this->curPaths.clear();
     auto splited_path = zutils::splitPath(path_through.string());
     for (auto &path : splited_path)

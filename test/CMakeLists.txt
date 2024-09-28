@@ -2,4 +2,4 @@
 project(Ztest)
 
 add_subdirectory(zcore)
-
+add_subdirectory(zconsole)

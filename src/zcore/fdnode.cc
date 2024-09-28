@@ -4,13 +4,10 @@
 #include <memory>
 #include <iostream>
 
-// using ZIdentifier = std::string;
-// using ZParent = std::optional<std::weak_ptr<ZFdNode>>;
-
 ZFdNode::ZFdNode(const ZIdentifier &id, ZParent parent): parent(parent), id(id)
 {
 #ifdef ZQ_DEBUG
-    std::cout << "[debug] Creating node: " << id << std::endl;
+    std::cout << "[DEBUG] Creating node: " << id << std::endl;
 #endif
     this->size = 0;
     this->children_count = 0;
